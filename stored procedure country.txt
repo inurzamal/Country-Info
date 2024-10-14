@@ -1,0 +1,366 @@
+ALTER Proc [dbo].[usp_CRD_LoadLookUpCountries]
+
+As
+
+Begin
+
+SELECT [Country], subRegion, Region FROM [Country-Table] order by [Country];
+
+Select Distinct Region from [Country-Table] where Region is not null and Region <>
+
+Select Distinct SubRegion, Region from [Country-Table] where SubRegion is not null and SubRegion <>
+
+Select distinct [CountryRiskData-Table]. Year FROM [CountryRiskData-Table] ORDER BY [CountryRiskData-Table].Year DESC Select distinct [Country-Table]. Analyst, subRegion, Region from [Country-Table] order by Analyst
+
+End
+
+// wait for next stored procedure.
+
+-------------------------------------------------
+
+ALTER Proc [dbo].[usp_CRD_LoadCountryInformation]
+
+(
+
+@Country nvarchar(25)
+
+)
+
+As
+
+Begin
+
+SELECT [Country-Table].*,
+
+[CountryRiskData-Table]. Year,
+
+[CountryRiskData-Table].CRG,
+
+[CountryRiskData-Table]. [CRR Outlook],
+
+[CountryRiskData-Table].CRR,
+
+[dbo].[fn_CRD_Common_ReviewByDate] ([Review Class], [CRRW Revised]) as ReviewByDate
+FROM [Country-Table] LEFT JOIN [CountryRiskData-Table] ON [Country-Table].Country=[CountryRiskData-Table].Country WHERE ((([CountryRiskData-Table].Year)-Year(getdate()) Or ([CountryRiskData-Table].Year) Is Null)) and [Country-Table].Country = @Country
+
+ORDER BY [Country-Table].Country
+
+--Guidelines-GDPQuery
+
+SELECT [CountryRiskData-Table]. Country, [Country-Table]. [Country Mnemonic],
+
+[CountryRiskData-Table].GDPD,
+
+isnull([CountryRiskData-Table].GDPD,0) isnull([CountryRiskData-Table].XRPD, 0) AS PY_GDP,
+
+[CountryRiskData-Table].TOTX,
+
+[CountryRiskData-Table]. TOTм,
+isnull([CountryRiskData-Table].TOTX, 0) + isnull([CountryRiskData-Table]. TOTM, 0) AS [Total Trade],
+
+[CountryRiskData-Table]. [BkSys Assets],
+
+[CountryRiskData-Table]. [BkSys Equity]
+
+into #GuidelinesGDPTempTable
+
+FROM [Country-Table] INNER JOIN [CountryRiskData-Table] ON [Country-Table].Country = [CountryRiskData-Table].Country
+
+WHERE ((([CountryRiskData-Table]. Year)=YEAR(getdate())-1));
+
+--Guidelines-CoLimQuery
+
+SELECT [dbo].[fn_CRD_GuidelineExclusion] ([Financial Center], [Sub-sovereign], [Supranational]) AS [Guideline Exclusion], [Country-Table]. [Country Mnemonic],
+
+[CountryRiskData-Table].Country, [CountryRiskData-Table].CRR,
+
+[dbo].[fn_CRD_CRRConverter] ([Country RiskData-Table].[CRR]) AS CRRC,
+
+[CountryRiskData-Table]. [CRR Outlook],
+
+[Country-Table]. [Financial Center],
+
+[Country-Table]. [Sub-sovereign],
+[Country-Table]. Sovereign,
+
+[Country-Table]. Supranational,
+
+[dbo].[fn_CRD_CoLimMaxTenor] ([CRR]) AS CoLim_MaxTenor,
+
+#GuidelinesGDPTempTable.GDPD,
+
+[dbo].[fn_CRD_GetCoLimGDP] ([CRR], #GuidelinesGDPTempTable.GDPD) AS CoLim_GDP,
+
+[dbo].[fn_CRD_GetCoLim_Capital] ([CRR], [TierI]) AS CoLim_Capital,
+
+[dbo].[fn_CRD_GetCoLim_WFC] ([dbo].[fn_CRD_GetCoLim_Capital] ([CRR], [TierI]), [
+
+dbo].[fn_CRD_GetCoLimGDP] ([CRR], #GuidelinesGDPTempTable.GDPD),
+
+[dbo].[fn_CRD_GetCoLim_MaxNT] ([TierI], [CRR], #GuidelinesGDPTempTable.GDPD) AS Colim_MaxNT,
+
+[Financial Center], [Supranational], [Sub-sovereign]) AS CoLim,
+
+#GuidelinesGDPTempTable. [Total Trade], #GuidelinesGDPTempTable. [BkSys Assets]
+
+FROM [Country-Table] INNER JOIN [CountryRiskData-Table] ON [Country-Table].Country [CountryRiskData-Table].Country INNER JOIN #GuidelinesGDPTempTable ON [CountryRiskData-Table].Country = #GuidelinesGDPTempTable.Country
+
+INNER JOIN [Capital-Table] ON [CountryRiskData-Table]. [Year] [Capital-Table].[Year]
+
+WHERE [CountryRiskData-Table]. CRR Is Not Null AND [Country RiskData-Table]. [Year] Year(getdate())
+
+AND [CountryRiskData-Table].Country @Country
+
+ORDER BY [CountryRiskData-Table].Country;
+SELECT distinct [RatingAction-Table].*
+
+FROM [RatingAction-Table]
+
+WHERE Country = @Country
+
+ORDER BY [RatingAction-Table]. [Rating Date] DESC;
+
+--Adding below query for Optimal Concurancy Check
+
+Select LastUpdatedOn from [Country-Table] where Country = @Country
+
+End
+
+// wait for next stored procedure.
+
+-------------------------------------------------------------------------------------
+
+ALTER Proc [dbo].[usp_CRD_AddNewCountry]
+
+(
+
+@Country nvarchar(25),
+
+@ShowCountry bit
+
+)
+
+As
+
+Begin
+
+Insert into [dbo].[Country-Table] (Country, [Show Country]) values (@Country, @ShowCountry)
+
+Insert into dbo. [CountryRiskData-Table] ([Country], [Year]) values (@Country, Year(getdate()))
+
+Insert into dbo. [CountryRiskData-Table] ([Country], [Year]) values (@Country, Year(getdate()) + 1)
+
+exec [dbo].[usp_CRD_LoadLookUpCountries]
+
+End
+
+// wait for next stored procedure.
+--------------------------------------------------------
+
+ALTER Proc [dbo].[usp_CRD_FetchCountryByCountry] ( @Country nvarchar(25)
+
+)
+
+As Begin
+
+select COUNTRY from [dbo].[Country-Table] WHERE Country = @Country;
+
+End
+
+// wait for next stored procedure.
+--------------------------------------------------------------------------
+
+ALTER Proc [dbo].[usp_CRD_UpdateCountryInfo]
+
+(
+
+@Country nvarchar(25),
+
+@ISOA3Code nvarchar(3),
+
+@Region nvarchar(25),
+
+@SubRegion nvarchar(25), @ReviewClass nvarchar(18),
+
+@Currency nvarchar(25),
+
+@CurrencyCode nvarchar(25),
+
+@ShowCountry bit,
+
+@DevelopmentClassification nvarchar(200),
+
+@FinancialCenter bit,
+
+@SubSovereign bit,
+
+@Sovereign nvarchar(2),
+
+@LastReview datetime = null,
+
+@NextReview datetime = null,
+
+@CurrentCRR nvarchar(25),
+
+@CurrentCRROutlook nvarchar(18),
+
+@ProposedCRR nvarchar(25),
+
+@ProposedCRROutlook nvarchar(18),
+
+@RatingComment nvarchar(max),
+
+@Analyst nvarchar(50),
+
+@2005FXRate float,
+
+@Multilateral bit,
+
+@Developing varchar(10),
+
+@ISOA2Code nvarchar(3)
+
+)
+As Begin
+
+update [dbo].[Country-Table]
+
+Set [ISO A3 Code] @ISOA3Code,
+
+[Country Mnemonic] @ISOA2Code,
+
+[CCI] @Developing,
+
+[Region] @Region,
+
+[Subregion]= @SubRegion,
+
+[Review Class] = @ReviewClass,
+
+[Currency] @Currency,
+
+[Currency Code] = @CurrencyCode,
+
+[Show Country] @ShowCountry,
+
+[Development Classification]= @DevelopmentClassification,
+
+[Financial Center]= @FinancialCenter,
+
+[Sub-sovereign]= @SubSovereign,
+
+[Sovereign] @Sovereign,
+
+[CRRW Revised]= @LastReview,
+
+[Review Scheduled]= @NextReview,
+
+[Proposed CRR Outlook] @ProposedCRROutlook,
+
+[Proposed CRR] @ProposedCRR,
+
+[Analyst]= @Analyst,
+
+[2005 FX Rate (av)]= @2005FXRate,
+
+[Supranational] @Multilateral, --Added newly
+
+[LastUpdatedOn] Getdate() --Adding for Optimal Concurancy
+
+where [Country] @Country;
+
+select getdate()
+
+End
+
+// wait for next stored procedure.
+----------------------------------------------------------------------------
+
+ALTER proc [dbo].[usp_CRD_ActivateRatings]
+
+(
+
+@Country nvarchar(25),
+
+@CurrentCRR nvarchar(25),
+
+@CurrentCRROutlook nvarchar(18), @ProposedCRR nvarchar(25),
+
+@ProposedCRROutlook nvarchar(18),
+
+@RatingComment nvarchar(max)
+
+)
+
+AS
+
+Begin
+
+SET XACT_ABORT ON --this will break the execution flow whenever error occurs within a transaction --and rollback automatically. Error will still be delivered to client
+
+begin transaction
+
+if @ProposedCRR =
+
+Set @ProposedCRR = null
+
+update [dbo].[Country-Table]
+
+Set [Proposed CRR Outlook] @ProposedCRROutlook,
+
+[Proposed CRR] = @ProposedCRR,
+
+[LastUpdatedOn] = Getdate() --Adding for Optimal Concurancy
+
+where [Country] = @Country;
+INSERT INTO [RatingAction-Table] (Country, [Rating Date], [Old CRG], [Old CRR Outlook], [Old CRR], [New CRG],
+
+[New CRR Outlook], [New CRR], [Rating Comment])
+
+SELECT [CountryRiskData-Table].Country, [Country-Table]. [CRRW Revised], [CountryRiskData-Table].CRG, [CountryRiskData-Table]. [CRR Outlook], [CountryRiskData-Table].CRR, [Country-Table]. [Proposed CRG], [Country-Table]. [Proposed CRR Outlook], [Country-Table]. [Proposed CRR],
+
+@RatingComment
+
+FROM [Country-Table] INNER JOIN [CountryRiskData-Table] ON [Country-Table].Country [CountryRiskData-Table].Country WHERE [CountryRiskData-Table].Country= @Country AND [CountryRiskData-Table].Year=Year(getdate())
+
+update [dbo].[CountryRiskData-Table] Set [CRR] @ProposedCRR, [CRR Outlook] = @ProposedCRROutlook where [Country] @Country and [Year] Year(getdate())
+
+Commit Transaction
+End
+
+// wait for next stored procedure.
+------------------------------------------------------------------------------------------------
+
+USE [CountryRisk]
+
+GO
+
+/****** Object: Stored Procedure [dbo].[usp_FetchISOCountryDetails] Script Date: 10/14/2024 12:42:28 PM ******/
+
+SET ANSI NULLS ON
+
+GO
+
+SET QUOTED_IDENTIFIER ON
+
+GO
+
+ALTER PROCEDURE [dbo].[usp_FetchISOCountryDetails]
+
+(
+
+@Country nvarchar(25)
+
+)
+
+AS
+
+BEGIN
+
+--To pull ISO Country details
+
+--SELECT COUNTRY, ctcode AS COUNTRY_CODE FROM T_ISO_CountryList WHERE Country = @Country;
+
+SELECT COUNTRY, ctcode AS COUNTRY_CODE FROM T_ISO_CountryList WHERE CTCode (SELECT [Country Mnemonic] as CTCode FROM [COUNTRY-TABLE] WHERE Country = @Country)
+
+END

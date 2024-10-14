@@ -1,0 +1,301 @@
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.sql.Timestamp;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CountryDTO {
+    private String country;
+    private String countryMnemonic;
+    private String isoA3Code;
+    private String region;
+    private String subregion;
+    private String bloombergRegion;
+    private String cci;
+    private String reviewClass;
+    private String currency;
+    private String currencyCode;
+    private Byte selectForReportYn;
+    private Byte scheduleForReview;
+    private Byte showCountry;
+    private String developmentClassification;
+    private Byte financialCenter;
+    private Byte subSovereign;
+    private String sovereign;
+    private Byte supranational;
+    private Timestamp lastReview;
+    private Timestamp expiry;
+    private Timestamp extension;
+    private Timestamp reviewScheduled;
+    private Timestamp viewMeetingDate;
+    private Timestamp submissionDate;
+    private Timestamp uwCompletionDate;
+    private String scheduleComment;
+    private Float fxRate1996;
+    private String countrySummary;
+    private Integer proposedCRG;
+    private String proposedCRROutlook;
+    private Float proposedCRR;
+    private String crrComments;
+    private String benchmarkComments;
+    private String scrrComments;
+    private String overallScoreComments;
+    private String economicComments;
+    private String politicalComments;
+    private String bankingComments;
+    private String ratingTriggers;
+    private String exposureComments;
+    private Timestamp crrwRevised;
+    private String analyst;
+    private Float fxRate2005;
+    private Timestamp lastUpdatedOn;
+    private Timestamp worksheetLastUpdatedOn;
+}
+---------------------------------
+import lombok.Data;
+
+import javax.persistence.*;
+import java.sql.Timestamp;
+
+@Data
+@Entity
+@Table(name = "Country_Table")
+public class Country {
+    @Id
+    @Column(name = "Country", nullable = false)
+    private String country;
+
+    @Column(name = "Country_Mnemonic")
+    private String countryMnemonic;
+
+    @Column(name = "ISO_A3_Code")
+    private String isoA3Code;
+
+    @Column(name = "Region")
+    private String region;
+
+    @Column(name = "Subregion")
+    private String subregion;
+
+    @Column(name = "Bloomberg_Region")
+    private String bloombergRegion;
+
+    @Column(name = "CCI")
+    private String cci;
+
+    @Column(name = "Review_Class")
+    private String reviewClass;
+
+    @Column(name = "Currency")
+    private String currency;
+
+    @Column(name = "Currency_Code")
+    private String currencyCode;
+
+    @Column(name = "Select_for_Report_YN")
+    private Byte selectForReportYn;
+
+    @Column(name = "Schedule_for_Review")
+    private Byte scheduleForReview;
+
+    @Column(name = "Show_Country")
+    private Byte showCountry;
+
+    @Column(name = "Development_Classification", columnDefinition = "VARCHAR(200) DEFAULT 'Not Classified'")
+    private String developmentClassification;
+
+    @Column(name = "Financial_Center")
+    private Byte financialCenter;
+
+    @Column(name = "Sub_sovereign")
+    private Byte subSovereign;
+
+    @Column(name = "Sovereign")
+    private String sovereign;
+
+    @Column(name = "Supranational")
+    private Byte supranational;
+
+    @Column(name = "Last_Review")
+    private Timestamp lastReview;
+
+    @Column(name = "Expiry")
+    private Timestamp expiry;
+
+    @Column(name = "Extension")
+    private Timestamp extension;
+
+    @Column(name = "Review_Scheduled")
+    private Timestamp reviewScheduled;
+
+    @Column(name = "View_Meeting_Date")
+    private Timestamp viewMeetingDate;
+
+    @Column(name = "Submission_Date")
+    private Timestamp submissionDate;
+
+    @Column(name = "UW_Completion_Date")
+    private Timestamp uwCompletionDate;
+
+    @Column(name = "Schedule_Comment")
+    private String scheduleComment;
+
+    @Column(name = "FX_Rate_1996")
+    private Float fxRate1996;
+
+    @Column(name = "Country_Summary")
+    private String countrySummary;
+
+    @Column(name = "Proposed_CRG")
+    private Integer proposedCRG;
+
+    @Column(name = "Proposed_CRR_Outlook")
+    private String proposedCRROutlook;
+
+    @Column(name = "Proposed_CRR")
+    private Float proposedCRR;
+
+    @Column(name = "CRR_Comments")
+    private String crrComments;
+
+    @Column(name = "Benchmark_Comments")
+    private String benchmarkComments;
+
+    @Column(name = "SCRR_Comments")
+    private String scrrComments;
+
+    @Column(name = "Overall_Score_Comments")
+    private String overallScoreComments;
+
+    @Column(name = "Economic_Comments")
+    private String economicComments;
+
+    @Column(name = "Political_Comments")
+    private String politicalComments;
+
+    @Column(name = "Banking_Comments")
+    private String bankingComments;
+
+    @Column(name = "Rating_Triggers")
+    private String ratingTriggers;
+
+    @Column(name = "Exposure_Comments")
+    private String exposureComments;
+
+    @Column(name = "CRRW_Revised")
+    private Timestamp crrwRevised;
+
+    @Column(name = "Analyst")
+    private String analyst;
+
+    @Column(name = "FX_Rate_2005")
+    private Float fxRate2005;
+
+    @Column(name = "LastUpdatedOn")
+    private Timestamp lastUpdatedOn;
+
+    @Column(name = "Worksheet_LastUpdatedOn")
+    private Timestamp worksheetLastUpdatedOn;
+}
+---------------------------------------------------
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/countries")
+public class CountryController {
+
+    @Autowired
+    private CountryService countryService;
+
+    @PostMapping
+    public ResponseEntity<CountryDTO> createCountry(@RequestBody CountryDTO countryDTO) {
+        CountryDTO createdCountry = countryService.createCountry(countryDTO);
+        return ResponseEntity.ok(createdCountry);
+    }
+
+    @GetMapping("/{country}")
+    public ResponseEntity<CountryDTO> getCountryById(@PathVariable String country) {
+        CountryDTO countryDTO = countryService.getCountryById(country);
+        return ResponseEntity.ok(countryDTO);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CountryDTO>> getAllCountries() {
+        List<CountryDTO> countries = countryService.getAllCountries();
+        return ResponseEntity.ok(countries);
+    }
+
+    @PutMapping("/{country}")
+    public ResponseEntity<CountryDTO> updateCountry(@PathVariable String country, @RequestBody CountryDTO countryDTO) {
+        CountryDTO updatedCountry = countryService.updateCountry(country, countryDTO);
+        return ResponseEntity.ok(updatedCountry);
+    }
+
+    @DeleteMapping("/{country}")
+    public ResponseEntity<Void> deleteCountry(@PathVariable String country) {
+        countryService.deleteCountry(country);
+        return ResponseEntity.noContent().build();
+    }
+}
+-------------------------------------------------------
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CountryService {
+
+    @Autowired
+    private CountryRepository countryRepository;
+
+    public CountryDTO createCountry(CountryDTO countryDTO) {
+        Country country = convertToEntity(countryDTO);
+        Country savedCountry = countryRepository.save(country);
+        return convertToDTO(savedCountry);
+    }
+
+    public CountryDTO getCountryById(String country) {
+        Country foundCountry = countryRepository.findById(country).orElseThrow(() -> new ResourceNotFoundException("Country not found"));
+        return convertToDTO(foundCountry);
+    }
+
+    public List<CountryDTO> getAllCountries() {
+        List<Country> countries = countryRepository.findAll();
+        return countries.stream().map(this::convertToDTO).toList();
+    }
+
+    public CountryDTO updateCountry(String country, CountryDTO countryDTO) {
+        Country existingCountry = countryRepository.findById(country).orElseThrow(() -> new ResourceNotFoundException("Country not found"));
+        // Update fields as necessary
+        Country updatedCountry = countryRepository.save(existingCountry);
+        return convertToDTO(updatedCountry);
+    }
+
+    public void deleteCountry(String country) {
+        countryRepository.deleteById(country);
+    }
+
+    private Country convertToEntity(CountryDTO dto) {
+        // Convert DTO to Entity
+    }
+
+    private CountryDTO convertToDTO(Country entity) {
+        // Convert Entity to DTO
+    }
+}
+------------------------------------------
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CountryRepository extends JpaRepository<Country, String> {
+    // Additional query methods if necessary
+}

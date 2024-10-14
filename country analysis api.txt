@@ -1,0 +1,292 @@
+
+
+### Foreign Key Analysis:
+- In the queries, relationships between **Country**, **Subregion**, and **Region** are evident, particularly with how they are fetched from the `Country-Table`.
+- The `CountryRiskData-Table` is queried by **Year** but has no visible relationship with **Region** or **Subregion**.
+  
+### API Suggestions:
+Based on this stored procedure, you could create the following APIs:
+1. **GET /countries**
+   - Fetch the list of all countries with subregions and regions.
+   - Equivalent to the first query in the stored procedure.
+
+2. **GET /regions**
+   - Fetch distinct regions (filtering out `NULL` or empty values).
+   - Equivalent to the second query.
+
+3. **GET /subregions**
+   - Fetch distinct subregions along with their regions.
+   - Equivalent to the third query.
+
+4. **GET /years**
+   - Fetch distinct years from `CountryRiskData-Table`.
+   - Equivalent to the fourth query.
+
+5. **GET /analysts**
+   - Fetch distinct analysts with subregions and regions.
+   - Equivalent to the fifth query.
+
+### Foreign Key Suggestion:
+Given that the queries don’t directly rely on foreign key constraints for **Country**, **Region**, or **Subregion**, it might be possible to skip foreign keys. However, having foreign key constraints ensures data integrity, especially when inserting or updating records.
+
+Waiting for the next stored procedure!
+
+--------------------------------------------------------------------------------------------------------------------------
+
+
+### Foreign Key Considerations
+
+- **`Country-Table` and `CountryRiskData-Table`**: The primary relationship in this procedure is between `Country-Table` and `CountryRiskData-Table`, based on the `Country` column. It would be logical to enforce a foreign key between these two tables to ensure data integrity, especially since country data is being cross-referenced.
+
+- **`RatingAction-Table`**: Another key relationship is with the `RatingAction-Table`, again based on the `Country` column. This also suggests a foreign key to ensure that any country in the `RatingAction-Table` must exist in the `Country-Table`.
+
+### API Suggestions
+
+Based on this stored procedure, the following APIs could be developed:
+
+1. **GET /country-information/{country}**
+   - Retrieves detailed information for a specific country, including:
+     - Basic country information.
+     - Risk data.
+     - Calculated values using several functions.
+     - Rating actions for the country.
+     - Last updated information.
+
+2. **GET /gdp-data/{country}**
+   - Fetches GDP and trade data for a specific country.
+
+3. **GET /rating-actions/{country}**
+   - Fetches all rating actions for a specific country, ordered by rating date.
+
+4. **GET /last-updated/{country}**
+   - Retrieves the last update date for a country.
+
+These APIs would allow a client to fetch detailed and related information about a specific country, including economic data and risk assessments.
+
+Waiting for the next stored procedure!
+
+
+--------------------------------------------------------------------------------------------------
+
+### Foreign Key Considerations
+
+Given the steps involved in this stored procedure, it's crucial to have a **foreign key constraint** between `CountryRiskData-Table` and `Country-Table` on the `Country` column. This ensures that any entry in the `CountryRiskData-Table` is linked to an existing country in the `Country-Table`. Otherwise, there could be orphaned data in the `CountryRiskData-Table` if an entry exists there but not in the `Country-Table`.
+
+If you omit the foreign key constraint, there’s a risk of data inconsistency, which may cause issues later when querying or maintaining the data.
+
+### API Suggestions
+
+1. **POST /countries**
+   - Inserts a new country and its risk data for the current and next year.
+   - Request body:
+     ```json
+     {
+       "country": "CountryName",
+       "showCountry": true
+     }
+     ```
+   - This API would insert the country into the `Country-Table` and two records into the `CountryRiskData-Table` (one for the current year and one for the next year).
+
+2. **GET /countries/lookup**
+   - Executes the equivalent of `usp_CRD_LoadLookUpCountries` to retrieve lookup data for countries (including subregions, regions, and years).
+   - This could be broken into multiple endpoints:
+     - **GET /regions**: Retrieve distinct regions.
+     - **GET /subregions**: Retrieve distinct subregions.
+     - **GET /years**: Retrieve distinct years from `CountryRiskData-Table`.
+
+Waiting for the next stored procedure!
+
+------------------------------------------------------------------------------------
+
+
+### Foreign Key Considerations
+
+In this stored procedure, there's no direct dependency on foreign keys because it only interacts with the `Country-Table`. However, the foreign key constraint on other tables (such as `CountryRiskData-Table` or `RatingAction-Table`) would still be useful for maintaining data integrity across the system.
+
+For this specific query, there is no need for a foreign key as it’s just fetching a value based on a condition. However, keeping foreign key constraints in other places would ensure that the country being fetched is consistently linked to other data in the system.
+
+### API Suggestion
+
+1. **GET /countries/{country}**
+   - Retrieves a specific country from the `Country-Table` based on the provided country name.
+   - Request parameter: `country` (e.g., `/countries/USA`)
+   - Example response:
+     ```json
+     {
+       "country": "USA"
+     }
+     ```
+
+This would be a basic lookup API for fetching a single country.
+
+Waiting for the next stored procedure!
+
+--------------------------------------------------------------------------------------
+
+
+### Foreign Key Considerations
+
+- **Foreign Key for `Country`:** It would be beneficial to enforce a foreign key on the `Country` field to ensure that updates only apply to valid countries. This will help maintain integrity between related tables, such as `CountryRiskData_Table` and `RatingAction_Table`, where the `Country` column might be referenced.
+  
+- **Related Tables:** Since this stored procedure only modifies `Country-Table`, foreign keys related to other tables (like `CountryRiskData_Table`) aren’t directly involved here, but maintaining foreign key integrity across the entire schema will help ensure consistent updates.
+
+### API Suggestion
+
+1. **PUT /countries/{country}**
+   - **Description:** Updates the information for a given country.
+   - **Request Parameters:**
+     - `country`: Country name (e.g., `/countries/USA`)
+     - JSON body with the following fields:
+       - `ISOA3Code`
+       - `ISOA2Code`
+       - `Region`
+       - `SubRegion`
+       - `ReviewClass`
+       - `Currency`
+       - `CurrencyCode`
+       - `ShowCountry`
+       - `DevelopmentClassification`
+       - `FinancialCenter`
+       - `SubSovereign`
+       - `Sovereign`
+       - `LastReview`
+       - `NextReview`
+       - `CurrentCRR`
+       - `CurrentCRROutlook`
+       - `ProposedCRR`
+       - `ProposedCRROutlook`
+       - `RatingComment`
+       - `Analyst`
+       - `2005FXRate`
+       - `Multilateral`
+       - `Developing`
+   - **Response Example:**
+     ```json
+     {
+       "status": "success",
+       "lastUpdatedOn": "2024-10-14T12:34:56"
+     }
+     ```
+
+### Concurrency Management
+- The stored procedure already handles concurrency by updating the `LastUpdatedOn` column. This can be leveraged in the API to ensure that no stale data is updated by incorporating optimistic concurrency checks.
+
+Let me know when you're ready to share the next stored procedure!
+
+----------------------------------------------------------------------------------------------
+
+
+### Foreign Key Considerations
+
+- **Foreign Key for `Country`:** It's important to maintain a foreign key constraint on the `Country` column in the `RatingAction-Table` and `CountryRiskData-Table`. This ensures that the operations performed in this stored procedure only affect valid entries, helping maintain data integrity across the schema.
+  
+### API Suggestion
+
+1. **POST /ratings/activate**
+   - **Description:** Activates proposed ratings for a given country.
+   - **Request Body:**
+     ```json
+     {
+       "country": "USA",
+       "currentCRR": "A",
+       "currentCRROutlook": "Stable",
+       "proposedCRR": "AA",
+       "proposedCRROutlook": "Positive",
+       "ratingComment": "Upgraded due to economic growth."
+     }
+     ```
+   - **Response Example:**
+     ```json
+     {
+       "status": "success",
+       "message": "Ratings activated successfully.",
+       "lastUpdatedOn": "2024-10-14T12:34:56"
+     }
+     ```
+
+### Additional Considerations
+
+- **Error Handling:** The procedure’s use of transactions ensures that if any step fails, changes will not be applied, which is crucial for maintaining data consistency.
+- **Concurrency Management:** By updating `LastUpdatedOn`, the procedure prepares for concurrency control, making sure that changes reflect the most recent updates.
+
+Let me know when you're ready to share the next stored procedure!
+
+------------------------------------------------
+### Stored Procedure Analysis: `usp_FetchISOCountryDetails`
+
+This stored procedure retrieves ISO country details based on the provided country name. Here’s a breakdown of the key components:
+
+1. **Input Parameter:**
+   - The procedure takes a single input parameter `@Country`, which is of type `nvarchar(25)`.
+
+   ```sql
+   @Country nvarchar(25)
+   ```
+
+2. **SQL Query:**
+   - The main query fetches the country name and its corresponding ISO code from the `T_ISO_CountryList` table.
+
+   ```sql
+   SELECT COUNTRY, ctcode AS COUNTRY_CODE 
+   FROM T_ISO_CountryList 
+   WHERE CTCode = (SELECT [Country Mnemonic] as CTCode FROM [Country-Table] WHERE Country = @Country)
+   ```
+
+   - Here, it attempts to match the `CTCode` in the `T_ISO_CountryList` with the `Country Mnemonic` obtained from the `Country-Table` for the specified `@Country`.
+
+### Key Points
+
+- **Subquery Usage:**
+  - The use of a subquery is intended to match the ISO code (CTCode) for the country specified by `@Country`. If `Country Mnemonic` is not unique, this may lead to issues if multiple rows exist in the `Country-Table`.
+
+- **Error Handling:**
+  - The procedure does not currently have error handling. If `@Country` does not exist in `Country-Table`, the subquery would return no rows, potentially causing issues.
+
+### Foreign Key Considerations
+
+- **Foreign Key Relationships:**
+  - If you intend to ensure referential integrity between the `T_ISO_CountryList` and the `Country-Table`, it would be prudent to have a foreign key constraint on `CTCode` in `T_ISO_CountryList` referencing `Country Mnemonic` in the `Country-Table`. This ensures that any country being referenced in the `T_ISO_CountryList` is valid according to the `Country-Table`.
+
+### API Suggestion
+
+1. **GET /iso/country-details**
+   - **Description:** Fetches ISO details for a given country.
+   - **Request Parameters:**
+     - `country`: The name of the country.
+   - **Response Example:**
+     ```json
+     {
+       "country": "United States",
+       "countryCode": "US"
+     }
+     ```
+
+### Additional Considerations
+
+- **Performance:** Depending on the size of the tables, subqueries can be less efficient than joins. If performance becomes an issue, consider restructuring the query to use a `JOIN` instead.
+- **Validation:** Consider implementing validation to check if the `@Country` exists in the `Country-Table` before performing the query to avoid unnecessary subquery execution and potential errors.
+
+---
+
+### Summary of Foreign Key Recommendations for All Tables:
+
+1. **Country-Table:**
+   - Use `Country` as the primary key.
+
+2. **CountryRiskData-Table:**
+   - Use `Country` as a foreign key referencing `Country-Table`.
+
+3. **RatingAction-Table:**
+   - Use `Country` as a foreign key referencing `Country-Table`.
+
+4. **T_ISO_CountryList:**
+   - Consider using `CTCode` as a foreign key referencing `Country Mnemonic` in `Country-Table`.
+
+5. **CountryRegion_Table and CountrySubregion_Table:**
+   - Should also reference appropriate tables if they have corresponding relationships.
+
+### Next Steps
+- With these considerations in mind, you can structure your Teradata tables with the necessary foreign keys to maintain data integrity.
+- As you transition to Java Spring Boot for your API development, these API suggestions can guide your implementation.
+
+Feel free to reach out if you have any more stored procedures or if you need further assistance with the migration or API design!
