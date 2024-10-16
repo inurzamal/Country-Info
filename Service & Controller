@@ -1,0 +1,138 @@
+import java.util.List;
+
+public interface CountryService {
+    CountryDTO createCountry(CountryDTO countryDTO);
+    CountryDTO updateCountry(String country, CountryDTO countryDTO);
+    CountryDTO getCountryById(String country);
+    List<CountryDTO> getAllCountries();
+    void deleteCountry(String country);
+}
+------------------------------------
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.modelmapper.ModelMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class CountryServiceImpl implements CountryService {
+
+    @Autowired
+    private CountryRepository countryRepository;
+
+    @Autowired
+    private ModelMapper modelMapper; // This is for converting entity to DTO and vice-versa
+
+    @Override
+    public CountryDTO createCountry(CountryDTO countryDTO) {
+        // Convert DTO to entity
+        Country country = modelMapper.map(countryDTO, Country.class);
+        Country savedCountry = countryRepository.save(country);
+        // Convert entity back to DTO
+        return modelMapper.map(savedCountry, CountryDTO.class);
+    }
+
+    @Override
+    public CountryDTO updateCountry(String countryId, CountryDTO countryDTO) {
+        Country existingCountry = countryRepository.findById(countryId)
+                .orElseThrow(() -> new RuntimeException("Country not found"));
+        
+        // Map the fields from the DTO to the existing entity
+        modelMapper.map(countryDTO, existingCountry);
+
+        Country updatedCountry = countryRepository.save(existingCountry);
+        return modelMapper.map(updatedCountry, CountryDTO.class);
+    }
+
+    @Override
+    public CountryDTO getCountryById(String countryId) {
+        Country country = countryRepository.findById(countryId)
+                .orElseThrow(() -> new RuntimeException("Country not found"));
+        return modelMapper.map(country, CountryDTO.class);
+    }
+
+    @Override
+    public List<CountryDTO> getAllCountries() {
+        List<Country> countries = countryRepository.findAll();
+        return countries.stream()
+                .map(country -> modelMapper.map(country, CountryDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteCountry(String countryId) {
+        Country country = countryRepository.findById(countryId)
+                .orElseThrow(() -> new RuntimeException("Country not found"));
+        countryRepository.delete(country);
+    }
+}
+---------------------------------------------------------------------------------
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/countries")
+public class CountryController {
+
+    @Autowired
+    private CountryService countryService;
+
+    // Create a new country
+    @PostMapping
+    public ResponseEntity<CountryDTO> createCountry(@RequestBody CountryDTO countryDTO) {
+        CountryDTO createdCountry = countryService.createCountry(countryDTO);
+        return new ResponseEntity<>(createdCountry, HttpStatus.CREATED);
+    }
+
+    // Update an existing country
+    @PutMapping("/{countryId}")
+    public ResponseEntity<CountryDTO> updateCountry(@PathVariable String countryId, @RequestBody CountryDTO countryDTO) {
+        CountryDTO updatedCountry = countryService.updateCountry(countryId, countryDTO);
+        return new ResponseEntity<>(updatedCountry, HttpStatus.OK);
+    }
+
+    // Get a country by its ID (country code)
+    @GetMapping("/{countryId}")
+    public ResponseEntity<CountryDTO> getCountryById(@PathVariable String countryId) {
+        CountryDTO countryDTO = countryService.getCountryById(countryId);
+        return new ResponseEntity<>(countryDTO, HttpStatus.OK);
+    }
+
+    // Get all countries
+    @GetMapping
+    public ResponseEntity<List<CountryDTO>> getAllCountries() {
+        List<CountryDTO> countries = countryService.getAllCountries();
+        return new ResponseEntity<>(countries, HttpStatus.OK);
+    }
+
+    // Delete a country by its ID (country code)
+    @DeleteMapping("/{countryId}")
+    public ResponseEntity<Void> deleteCountry(@PathVariable String countryId) {
+        countryService.deleteCountry(countryId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+}
+-------------------------------------------------------------------
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CountryRepository extends JpaRepository<Country, String> {
+    // Custom query methods if needed can be added here
+}
+---------------------------------------------------------------
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class ModelMapperConfig {
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
+}
