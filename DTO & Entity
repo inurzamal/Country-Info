@@ -1,0 +1,196 @@
+
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CountryDTO {
+    private String country;
+    private String countryMnemonic;
+    private String isoA3Code;
+    private String region;
+    private String subregion;
+    private String bloombergRegion;
+    private String cci;
+    private String reviewClass;
+    private String currency;
+    private String currencyCode;
+    private Byte selectForReportYn;
+    private Byte scheduleForReview;
+    private Byte showCountry;
+    private String developmentClassification;
+    private Byte financialCenter;
+    private Byte subSovereign;
+    private String sovereign;
+    private Byte supranational;
+    private LocalDateTime lastReview;
+    private LocalDateTime expiry;
+    private LocalDateTime extension;
+    private LocalDateTime reviewScheduled;
+    private LocalDateTime viewMeetingDate;
+    private LocalDateTime submissionDate;
+    private LocalDateTime uwCompletionDate;
+    private String scheduleComment;
+    private Float fxRate1996;
+    private String countrySummary;
+    private Integer proposedCRG;
+    private String proposedCRROutlook;
+    private Float proposedCRR;
+    private String crrComments;
+    private String benchmarkComments;
+    private String scrrComments;
+    private String overallScoreComments;
+    private String economicComments;
+    private String politicalComments;
+    private String bankingComments;
+    private String ratingTriggers;
+    private String exposureComments;
+    private LocalDateTime crrwRevised;
+    private String analyst;
+    private Float fxRate2005;
+    private LocalDateTime lastUpdatedOn;
+    private LocalDateTime worksheetLastUpdatedOn;
+}
+---------------------------------
+
+
+@Data
+@Entity
+@Table(name = "Country_Table")
+public class Country {
+    @Id
+    @Column(name = "Country", nullable = false)
+    private String country;
+
+    @Column(name = "Country_Mnemonic")
+    private String countryMnemonic;
+
+    @Column(name = "ISO_A3_Code")
+    private String isoA3Code;
+
+    @Column(name = "Region")
+    private String region;
+
+    @Column(name = "Subregion")
+    private String subregion;
+
+    @Column(name = "Bloomberg_Region")
+    private String bloombergRegion;
+
+    @Column(name = "CCI")
+    private String cci;
+
+    @Column(name = "Review_Class")
+    private String reviewClass;
+
+    @Column(name = "Currency")
+    private String currency;
+
+    @Column(name = "Currency_Code")
+    private String currencyCode;
+
+    @Column(name = "Select_for_Report_YN")
+    private Byte selectForReportYn;
+
+    @Column(name = "Schedule_for_Review")
+    private Byte scheduleForReview;
+
+    @Column(name = "Show_Country")
+    private Byte showCountry;
+
+    @Column(name = "Development_Classification", columnDefinition = "VARCHAR(200) DEFAULT 'Not Classified'")
+    private String developmentClassification;
+
+    @Column(name = "Financial_Center")
+    private Byte financialCenter;
+
+    @Column(name = "Sub_sovereign")
+    private Byte subSovereign;
+
+    @Column(name = "Sovereign")
+    private String sovereign;
+
+    @Column(name = "Supranational")
+    private Byte supranational;
+
+    @Column(name = "Last_Review")
+    private LocalDateTime lastReview;
+
+    @Column(name = "Expiry")
+    private LocalDateTime expiry;
+
+    @Column(name = "Extension")
+    private LocalDateTime extension;
+
+    @Column(name = "Review_Scheduled")
+    private LocalDateTime reviewScheduled;
+
+    @Column(name = "View_Meeting_Date")
+    private LocalDateTime viewMeetingDate;
+
+    @Column(name = "Submission_Date")
+    private LocalDateTime submissionDate;
+
+    @Column(name = "UW_Completion_Date")
+    private LocalDateTime uwCompletionDate;
+
+    @Column(name = "Schedule_Comment")
+    private String scheduleComment;
+
+    @Column(name = "FX_Rate_1996")
+    private Float fxRate1996;
+
+    @Column(name = "Country_Summary")
+    private String countrySummary;
+
+    @Column(name = "Proposed_CRG")
+    private Integer proposedCRG;
+
+    @Column(name = "Proposed_CRR_Outlook")
+    private String proposedCRROutlook;
+
+    @Column(name = "Proposed_CRR")
+    private Float proposedCRR;
+
+    @Column(name = "CRR_Comments")
+    private String crrComments;
+
+    @Column(name = "Benchmark_Comments")
+    private String benchmarkComments;
+
+    @Column(name = "SCRR_Comments")
+    private String scrrComments;
+
+    @Column(name = "Overall_Score_Comments")
+    private String overallScoreComments;
+
+    @Column(name = "Economic_Comments")
+    private String economicComments;
+
+    @Column(name = "Political_Comments")
+    private String politicalComments;
+
+    @Column(name = "Banking_Comments")
+    private String bankingComments;
+
+    @Column(name = "Rating_Triggers")
+    private String ratingTriggers;
+
+    @Column(name = "Exposure_Comments")
+    private String exposureComments;
+
+    @Column(name = "CRRW_Revised")
+    private LocalDateTime crrwRevised;
+
+    @Column(name = "Analyst")
+    private String analyst;
+
+    @Column(name = "FX_Rate_2005")
+    private Float fxRate2005;
+
+    @Column(name = "LastUpdatedOn")
+    private LocalDateTime lastUpdatedOn;
+
+    @Column(name = "Worksheet_LastUpdatedOn")
+    private LocalDateTime worksheetLastUpdatedOn;
+}
+---------------------------------------------------
