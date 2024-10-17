@@ -1,0 +1,43 @@
+@PutMapping("/update")
+public ResponseEntity<CountryDTO> updateCountry(@RequestBody CountryDTO countryDTO) {
+    CountryDTO updatedCountry = countryService.updateCountry(countryDTO);
+    return ResponseEntity.ok(updatedCountry);
+}
+
+CountryDTO updateCountry(CountryDTO countryDTO);
+
+
+@Override
+public CountryDTO updateCountry(CountryDTO countryDTO) {
+    Optional<Country> existingCountry = countryRepository.findById(countryDTO.getCountry());
+    if (existingCountry.isPresent()) {
+        Country country = existingCountry.get();
+        country.setCountryMnemonic(countryDTO.getCountryMnemonic());
+        country.setIsoA3Code(countryDTO.getIsoA3Code());
+        country.setRegion(countryDTO.getRegion());
+        // Update other fields as needed
+        Country updatedCountry = countryRepository.save(country);
+        return mapToDTO(updatedCountry);
+    } else {
+        throw new EntityNotFoundException("Country not found");
+    }
+}
+
+--------------------------------
+@GetMapping("/{countryName}")
+public ResponseEntity<CountryDTO> fetchByCountryName(@PathVariable String countryName) {
+    CountryDTO countryDTO = countryService.fetchByCountryName(countryName);
+    if (countryDTO != null) {
+        return ResponseEntity.ok(countryDTO);
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+}
+
+CountryDTO fetchByCountryName(String countryName);
+
+@Override
+public CountryDTO fetchByCountryName(String countryName) {
+    Optional<Country> country = countryRepository.findById(countryName);
+    return country.map(this::mapToDTO).orElse(null);
+}
