@@ -1,0 +1,25 @@
+@Component
+public class MappingHelper {
+
+    ModelMapper modelMapper;
+
+    public MappingHelper() {
+        modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+    }
+
+    // Generic method to map entities to DTOs
+    public <D, E> D convertToNewDto(E src, Class<D> targetClass) {
+        return modelMapper.map(src, targetClass);
+    }
+
+    // Generic method to map DTOs to entities
+    public <D, E> E convertToNewEntity(D src, Class<E> targetClass) {
+        return modelMapper.map(src, targetClass);
+    }
+
+    // Method to map DTO to an existing entity (no return)
+    public <D, E> void convertToEntity(D src, E dest) {
+        modelMapper.map(src, dest);
+    }
+}
