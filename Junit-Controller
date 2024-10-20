@@ -1,0 +1,103 @@
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.Optional;
+
+@WebMvcTest(CountryRiskController.class)
+class CountryRiskControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private CountryRiskService countryRiskService;
+
+    @InjectMocks
+    private CountryRiskController countryRiskController;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(countryRiskController).build();
+    }
+
+    @Test
+    void testAddNewCountry_Success() throws Exception {
+        CountryCreateDTO countryCreateDTO = new CountryCreateDTO("USA", true);
+        CountryDTO newCountry = new CountryDTO("USA", true);
+
+        when(countryRiskService.countryExists("USA")).thenReturn(false);
+        when(countryRiskService.addCountry(any(CountryCreateDTO.class))).thenReturn(newCountry);
+
+        mockMvc.perform(post("/api/countryRisk/addCountry")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(countryCreateDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.country").value("USA"));
+    }
+
+    @Test
+    void testAddNewCountry_Conflict() throws Exception {
+        CountryCreateDTO countryCreateDTO = new CountryCreateDTO("USA", true);
+
+        when(countryRiskService.countryExists("USA")).thenReturn(true);
+
+        mockMvc.perform(post("/api/countryRisk/addCountry")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(countryCreateDTO)))
+                .andExpect(status().isConflict())
+                .andExpect(content().string("Country Already Exists"));
+    }
+
+    @Test
+    void testFetchByCountryName_Success() throws Exception {
+        String countryName = "USA";
+        CountryDTO countryDTO = new CountryDTO("USA", true);
+
+        when(countryRiskService.fetchByCountryName(countryName)).thenReturn(countryDTO);
+
+        mockMvc.perform(get("/api/countryRisk/{countryName}", countryName))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.country").value("USA"));
+    }
+
+    @Test
+    void testFetchByCountryName_NotFound() throws Exception {
+        String countryName = "UNKNOWN";
+
+        when(countryRiskService.fetchByCountryName(countryName)).thenThrow(new EntityNotFoundException("Country Not Found"));
+
+        mockMvc.perform(get("/api/countryRisk/{countryName}", countryName))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Country Not Found"));
+    }
+
+    @Test
+    void testUpdateCountry_Success() throws Exception {
+        CountryDTO countryDTO = new CountryDTO("USA", true);
+
+        when(countryRiskService.updateCountry(any(CountryDTO.class))).thenReturn(countryDTO);
+
+        mockMvc.perform(put("/api/countryRisk/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(countryDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.country").value("USA"));
+    }
+}
