@@ -1,0 +1,182 @@
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.example.dto.CountryCreateDTO;
+import com.example.dto.CountryDTO;
+import com.example.entity.CountryEntity;
+import com.example.exception.EntityNotFoundException;
+import com.example.repository.CountryRepository;
+import com.example.service.CountryRiskServiceImpl;
+import com.example.util.MappingHelper;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+class CountryRiskServiceImplTest {
+
+    @InjectMocks
+    private CountryRiskServiceImpl countryRiskService;
+
+    @Mock
+    private CountryRepository countryRepository;
+
+    @Mock
+    private MappingHelper mappingHelper;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testAddCountry_Success() {
+        // Arrange
+        CountryCreateDTO countryCreateDTO = new CountryCreateDTO();
+        countryCreateDTO.setCountry("TestCountry");
+        countryCreateDTO.setShowCountry(true);
+
+        CountryEntity countryEntity = new CountryEntity();
+        countryEntity.setCountry("TestCountry");
+        countryEntity.setShowCountry(true);
+
+        CountryEntity savedCountryEntity = new CountryEntity();
+        savedCountryEntity.setCountry("TestCountry");
+        savedCountryEntity.setShowCountry(true);
+
+        CountryDTO expectedCountryDTO = new CountryDTO();
+        expectedCountryDTO.setCountry("TestCountry");
+        expectedCountryDTO.setShowCountry(true);
+
+        when(countryRepository.save(any(CountryEntity.class))).thenReturn(savedCountryEntity);
+        when(mappingHelper.convertToNewDto(savedCountryEntity, CountryDTO.class)).thenReturn(expectedCountryDTO);
+
+        // Act
+        CountryDTO result = countryRiskService.addCountry(countryCreateDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("TestCountry", result.getCountry());
+        assertTrue(result.getShowCountry());
+        verify(countryRepository, times(1)).save(any(CountryEntity.class));
+        verify(mappingHelper, times(1)).convertToNewDto(savedCountryEntity, CountryDTO.class);
+    }
+
+    @Test
+    void testCountryExists_True() {
+        // Arrange
+        String countryName = "TestCountry";
+        when(countryRepository.existsById(countryName)).thenReturn(true);
+
+        // Act
+        boolean exists = countryRiskService.countryExists(countryName);
+
+        // Assert
+        assertTrue(exists);
+        verify(countryRepository, times(1)).existsById(countryName);
+    }
+
+    @Test
+    void testCountryExists_False() {
+        // Arrange
+        String countryName = "TestCountry";
+        when(countryRepository.existsById(countryName)).thenReturn(false);
+
+        // Act
+        boolean exists = countryRiskService.countryExists(countryName);
+
+        // Assert
+        assertFalse(exists);
+        verify(countryRepository, times(1)).existsById(countryName);
+    }
+
+    @Test
+    void testFetchByCountryName_Success() {
+        // Arrange
+        String countryName = "TestCountry";
+        CountryEntity countryEntity = new CountryEntity();
+        countryEntity.setCountry(countryName);
+        countryEntity.setShowCountry(true);
+
+        CountryDTO expectedCountryDTO = new CountryDTO();
+        expectedCountryDTO.setCountry(countryName);
+        expectedCountryDTO.setShowCountry(true);
+
+        when(countryRepository.findById(countryName)).thenReturn(Optional.of(countryEntity));
+        when(mappingHelper.convertToNewDto(countryEntity, CountryDTO.class)).thenReturn(expectedCountryDTO);
+
+        // Act
+        CountryDTO result = countryRiskService.fetchByCountryName(countryName);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(countryName, result.getCountry());
+        verify(countryRepository, times(1)).findById(countryName);
+        verify(mappingHelper, times(1)).convertToNewDto(countryEntity, CountryDTO.class);
+    }
+
+    @Test
+    void testFetchByCountryName_NotFound() {
+        // Arrange
+        String countryName = "NonExistentCountry";
+        when(countryRepository.findById(countryName)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            countryRiskService.fetchByCountryName(countryName);
+        });
+
+        assertEquals("Country Not Found", exception.getMessage());
+        verify(countryRepository, times(1)).findById(countryName);
+    }
+
+    @Test
+    void testUpdateCountry_Success() {
+        // Arrange
+        CountryDTO countryDTO = new CountryDTO();
+        countryDTO.setCountry("TestCountry");
+        countryDTO.setShowCountry(true);
+
+        CountryEntity existingCountryEntity = new CountryEntity();
+        existingCountryEntity.setCountry("TestCountry");
+        existingCountryEntity.setShowCountry(false);
+
+        when(countryRepository.findById("TestCountry")).thenReturn(Optional.of(existingCountryEntity));
+        doNothing().when(mappingHelper).convertToEntity(countryDTO, existingCountryEntity);
+        when(countryRepository.save(existingCountryEntity)).thenReturn(existingCountryEntity);
+        when(mappingHelper.convertToNewDto(existingCountryEntity, CountryDTO.class)).thenReturn(countryDTO);
+
+        // Act
+        CountryDTO updatedCountryDTO = countryRiskService.updateCountry(countryDTO);
+
+        // Assert
+        assertNotNull(updatedCountryDTO);
+        assertEquals("TestCountry", updatedCountryDTO.getCountry());
+        verify(countryRepository, times(1)).findById("TestCountry");
+        verify(mappingHelper, times(1)).convertToEntity(countryDTO, existingCountryEntity);
+        verify(countryRepository, times(1)).save(existingCountryEntity);
+        verify(mappingHelper, times(1)).convertToNewDto(existingCountryEntity, CountryDTO.class);
+    }
+
+    @Test
+    void testUpdateCountry_NotFound() {
+        // Arrange
+        CountryDTO countryDTO = new CountryDTO();
+        countryDTO.setCountry("NonExistentCountry");
+        when(countryRepository.findById("NonExistentCountry")).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            countryRiskService.updateCountry(countryDTO);
+        });
+
+        assertEquals("Country not found", exception.getMessage());
+        verify(countryRepository, times(1)).findById("NonExistentCountry");
+        verify(mappingHelper, never()).convertToEntity(any(), any());
+        verify(countryRepository, never()).save(any());
+    }
+}
