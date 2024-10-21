@@ -1,0 +1,78 @@
+@Test
+void testAddNewCountry_CountryExists() throws Exception {
+    // Arrange
+    CountryCreateDTO countryCreateDTO = new CountryCreateDTO();
+    countryCreateDTO.setCountry("TestCountry");
+
+    when(countryRiskService.countryExists(anyString())).thenReturn(true);
+
+    // Act & Assert
+    mockMvc.perform(post("/api/countryRisk/addCountry")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(countryCreateDTO)))
+            .andExpect(status().isConflict())
+            .andExpect(content().string("Country Already Exists"));
+}
+
+@Test
+void testAddNewCountry_Success() throws Exception {
+    // Arrange
+    CountryCreateDTO countryCreateDTO = new CountryCreateDTO();
+    countryCreateDTO.setCountry("TestCountry");
+    CountryDTO countryDTO = new CountryDTO();
+    countryDTO.setCountry("TestCountry");
+
+    when(countryRiskService.countryExists(anyString())).thenReturn(false);
+    when(countryRiskService.addCountry(any(CountryCreateDTO.class))).thenReturn(countryDTO);
+
+    // Act & Assert
+    mockMvc.perform(post("/api/countryRisk/addCountry")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(countryCreateDTO)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.country").value("TestCountry"));
+}
+
+
+@Test
+void testFetchByCountryName_Success() throws Exception {
+    // Arrange
+    CountryDTO countryDTO = new CountryDTO();
+    countryDTO.setCountry("TestCountry");
+
+    when(countryRiskService.fetchByCountryName(anyString())).thenReturn(countryDTO);
+
+    // Act & Assert
+    mockMvc.perform(get("/api/countryRisk/TestCountry")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.country").value("TestCountry"));
+}
+
+@Test
+void testFetchByCountryName_NotFound() throws Exception {
+    // Arrange
+    when(countryRiskService.fetchByCountryName(anyString())).thenThrow(new EntityNotFoundException("Country Not Found"));
+
+    // Act & Assert
+    mockMvc.perform(get("/api/countryRisk/UnknownCountry")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string("Country Not Found"));
+}
+
+@Test
+void testUpdateCountry_Success() throws Exception {
+    // Arrange
+    CountryDTO countryDTO = new CountryDTO();
+    countryDTO.setCountry("TestCountry");
+
+    when(countryRiskService.updateCountry(any(CountryDTO.class))).thenReturn(countryDTO);
+
+    // Act & Assert
+    mockMvc.perform(put("/api/countryRisk/update")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(countryDTO)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.country").value("TestCountry"));
+}
