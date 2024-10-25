@@ -1,0 +1,365 @@
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+@Entity
+@Table(name = "COUNTRY_RISK_DATA_TABLE")
+@Data
+public class CountryRiskData {
+
+    @EmbeddedId
+    private CountryRiskDataId id;
+
+    @Column(name = "CRG")
+    private Integer crg;
+
+    @Column(name = "CRR_OUTLOOK")
+    private String crrOutlook;
+
+    @Column(name = "CRR")
+    private Float crr;
+
+    @Column(name = "IIRATING")
+    private Float iiRating;
+
+    @Column(name = "IIRANK")
+    private Short iiRank;
+
+    @Column(name = "EUROMONEYRATING")
+    private Float euromoneyRating;
+
+    @Column(name = "EUROMONEYRANK")
+    private Short euromoneyRank;
+
+    @Column(name = "MOODYS_LT_RATING")
+    private String moodysLtRating;
+
+    @Column(name = "MOODYS_ST_RATING")
+    private String moodysStRating;
+
+    @Column(name = "MOODYS_OUTLOOK")
+    private String moodysOutlook;
+
+    @Column(name = "SP_LT_RATING")
+    private String spLtRating;
+
+    @Column(name = "SP_ST_RATING")
+    private String spStRating;
+
+    @Column(name = "SP_OUTLOOK")
+    private String spOutlook;
+
+    @Column(name = "FITCH_LT_FX_RATING")
+    private String fitchLtFxRating;
+
+    @Column(name = "FITCH_ST_FX_RATING")
+    private String fitchStFxRating;
+
+    @Column(name = "FITCH_OUTLOOK")
+    private String fitchOutlook;
+
+    @Column(name = "WB_DBIRANK")
+    private Integer wbDbiRank;
+
+    @Column(name = "WB_VTHGDP")
+    private Float wbVthGdp;
+
+    @Column(name = "WB_VTHRANK")
+    private Integer wbVthRank;
+
+    @Column(name = "OECD_CRC")
+    private Short oecdCrc;
+
+    @Column(name = "EIU_CORISK_RATING")
+    private String eiuCoriskRating;
+
+    @Column(name = "EIU_CORISK_SCORE")
+    private String eiuCoriskScore;
+
+    @Column(name = "EIU_PRR")
+    private String eiuPrr;
+
+    @Column(name = "PRS_PRR")
+    private Float prsPrr;
+
+    @Column(name = "EIU_ORRN")
+    private Float eiuOrrn;
+
+    @Column(name = "ESF_RANK")
+    private Byte esfRank;
+
+    @Column(name = "ESF_SCORE")
+    private Float esfScore;
+
+    @Column(name = "ESF_DEVELOPMENTS")
+    private String esfDevelopments;
+
+    @Column(name = "ESFBI_SCORE")
+    private Float esfbiScore;
+
+    @Column(name = "ESFBI_RANK")
+    private Float esfbiRank;
+
+    @Column(name = "FH_FITW")
+    private Float fhFitw;
+
+    @Column(name = "FH_PR")
+    private Float fhPr;
+
+    @Column(name = "FH_CL")
+    private Float fhCl;
+
+    @Column(name = "FFP_FSISCORE")
+    private Float ffpFsiScore;
+
+    @Column(name = "FFP_FSIRANK")
+    private Float ffpFsiRank;
+
+    @Column(name = "HF_IEF")
+    private Float hfIef;
+
+    @Column(name = "SHADECON")
+    private Float shadeCon;
+
+    @Column(name = "ICR_COMPOSITE")
+    private String icrComposite;
+
+    @Column(name = "ICR_OFAC")
+    private String icrOfac;
+
+    @Column(name = "ICR_CREDITRISK")
+    private String icrCreditRisk;
+
+    @Column(name = "ICR_COMPLIANCE")
+    private String icrCompliance;
+
+    @Column(name = "ICR_OPERATIONAL")
+    private String icrOperational;
+
+    @Column(name = "ICR_REPUTATIONAL")
+    private String icrReputational;
+
+    @Column(name = "ICR_TRAVELRISK")
+    private String icrTravelRisk;
+
+    @Column(name = "TI_CPIRANK")
+    private Short tiCpiRank;
+
+    @Column(name = "TI_CPISCORE")
+    private Float tiCpiScore;
+
+    @Column(name = "TI_CPIPERCENT")
+    private Float tiCpiPercent;
+
+    @Column(name = "UN_HDI")
+    private Float unHdi;
+
+    @Column(name = "UN_HDIRANK")
+    private Float unHdiRank;
+
+    @Column(name = "WEF_GCIRANK")
+    private Short wefGciRank;
+
+    @Column(name = "WEF_GCISCORE")
+    private Float wefGciScore;
+
+    @Column(name = "WEF_FDIRANK")
+    private Short wefFdiRank;
+
+    @Column(name = "WEF_FDISCORE")
+    private Float wefFdiScore;
+
+    @Column(name = "WGI_VA")
+    private Float wgiVa;
+
+    @Column(name = "WGI_PS")
+    private Float wgiPs;
+
+    @Column(name = "WGI_GE")
+    private Float wgiGe;
+
+    @Column(name = "WGI_RQ")
+    private Float wgiRq;
+
+    @Column(name = "WGI_RL")
+    private Float wgiRl;
+
+    @Column(name = "WGI_CC")
+    private Float wgiCc;
+
+    @Column(name = "ICERC_TRADE_RATING")
+    private String icercTradeRating;
+
+    @Column(name = "ICERC_OTHER_RATING")
+    private String icercOtherRating;
+
+    @Column(name = "ICERC_ATRR")
+    private Short icercAtrr;
+
+    @Column(name = "FTW")
+    private Integer ftw;
+
+    @Column(name = "TDBT")
+    private BigDecimal tdbt;
+
+    @Column(name = "NTDT")
+    private BigDecimal ntdt;
+
+    @Column(name = "TSTD")
+    private BigDecimal tstd;
+
+    @Column(name = "ARRS")
+    private BigDecimal arrs;
+
+    @Column(name = "PRPP")
+    private BigDecimal prpp;
+
+    @Column(name = "TINT")
+    private BigDecimal tint;
+
+    @Column(name = "FRES")
+    private BigDecimal fres;
+
+    @Column(name = "BALC")
+    private BigDecimal balc;
+
+    @Column(name = "BALM")
+    private BigDecimal balm;
+
+    @Column(name = "TOTX")
+    private BigDecimal totx;
+
+    @Column(name = "TOTM")
+    private BigDecimal totm;
+
+    @Column(name = "MEXP")
+    private BigDecimal mexp;
+
+    @Column(name = "MIMP")
+    private BigDecimal mimp;
+
+    @Column(name = "XSER")
+    private BigDecimal xser;
+
+    @Column(name = "MSER")
+    private BigDecimal mser;
+
+    @Column(name = "XIPD")
+    private BigDecimal xipd;
+
+    @Column(name = "MIPD")
+    private BigDecimal mipd;
+
+    @Column(name = "GNTR")
+    private BigDecimal gntr;
+
+    @Column(name = "PNTR")
+    private BigDecimal pntr;
+
+    @Column(name = "INVF")
+    private BigDecimal invf;
+
+    @Column(name = "INVP")
+    private BigDecimal invp;
+
+    @Column(name = "XRPD")
+    private Float xrpd;
+
+    @Column(name = "ENDR")
+    private Float endr;
+
+    @Column(name = "XRRE")
+    private Float xrre;
+
+    @Column(name = "CXRRE")
+    private Float cxrre;
+
+    @Column(name = "GDPD")
+    private BigDecimal gdpd;
+
+    @Column(name = "CGDP")
+    private BigDecimal cgdp;
+
+    @Column(name = "DGDP")
+    private Float dgdp;
+
+    @Column(name = "YPCP")
+    private Float ypcp;
+
+    @Column(name = "POPN")
+    private Float popn;
+
+    @Column(name = "UNEM")
+    private Float unem;
+
+    @Column(name = "DCPI")
+    private Float dcpi;
+
+    @Column(name = "SMN2")
+    private Float smn2;
+
+    @Column(name = "DMN2")
+    private Float dmn2;
+
+    @Column(name = "SODC")
+    private Float sodc;
+
+    @Column(name = "SODD")
+    private Float sodd;
+
+    @Column(name = "LRAT")
+    private Float lrat;
+
+    @Column(name = "PBAX")
+    private Float pbax;
+
+    @Column(name = "PSBR")
+    private Float psbr;
+
+    @Column(name = "PUDP")
+    private Float pudp;
+
+    @Column(name = "BREP")
+    private Float brep;
+
+    @Column(name = "BINT")
+    private Float bint;
+
+    @Column(name = "OR_XC")
+    private Byte orXc;
+
+    @Column(name = "OR_FC")
+    private Byte orFc;
+
+    @Column(name = "OR_CB")
+    private Byte orCb;
+
+    @Column(name = "REVISION_DATE")
+    private Timestamp revisionDate;
+
+    @Column(name = "EIU_BSR")
+    private String eiuBsr;
+
+    @Column(name = "MOODYS_BFSR")
+    private String moodysBfsr;
+
+    @Column(name = "FITCH_BS")
+    private String fitchBs;
+
+    @Column(name = "SOVERIGN_SCR")
+    private String sovereignScr;
+
+    @Column(name = "BR_LASTUPDATEDON")
+    private Timestamp brLastUpdatedOn;
+
+    @Column(name = "ER_LASTUPDATEDON")
+    private Timestamp erLastUpdatedOn;
+
+    @Column(name = "PR_LASTUPDATEDON")
+    private Timestamp prLastUpdatedOn;
+
+    @Column(name = "RATINGS_LASTUPDATEDON")
+    private Timestamp ratingsLastUpdatedOn;
+}
