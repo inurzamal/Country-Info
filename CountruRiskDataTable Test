@@ -1,0 +1,176 @@
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import com.wellsfargo.era.sermcrdmserverapp.business.impl.CountryRiskDataServiceImpl;
+import com.wellsfargo.era.sermcrdmserverapp.dto.CountryRiskDataDTO;
+import com.wellsfargo.era.sermcrdmserverapp.entity.CountryRiskDataEntity;
+import com.wellsfargo.era.sermcrdmserverapp.entity.CountryRiskDataId;
+import com.wellsfargo.era.sermcrdmserverapp.repository.CountryRiskDataRepository;
+import com.wellsfargo.era.sermcrdmserverapp.util.MappingHelper;
+import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+import java.util.Optional;
+
+class CountryRiskDataServiceImplTest {
+
+    @InjectMocks
+    private CountryRiskDataServiceImpl countryRiskDataService;
+
+    @Mock
+    private CountryRiskDataRepository repository;
+
+    @Mock
+    private MappingHelper mappingHelper;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testFetchAllCountryRiskData_Success() {
+        CountryRiskDataEntity entity = new CountryRiskDataEntity();
+        CountryRiskDataDTO dto = new CountryRiskDataDTO();
+
+        when(repository.findAll()).thenReturn(List.of(entity));
+        when(mappingHelper.convertToNewDto(any(CountryRiskDataEntity.class), eq(CountryRiskDataDTO.class))).thenReturn(dto);
+
+        List<CountryRiskDataDTO> result = countryRiskDataService.fetchAllCountryRiskData();
+
+        assertEquals(1, result.size());
+        verify(repository, times(1)).findAll();
+    }
+
+    @Test
+    void testUpdateCountryRiskData_Success() {
+        CountryRiskDataDTO dto = new CountryRiskDataDTO();
+        dto.setCountry("USA");
+        dto.setRiskYear(2023);
+
+        CountryRiskDataEntity entity = new CountryRiskDataEntity();
+        CountryRiskDataId id = new CountryRiskDataId(dto.getCountry(), dto.getRiskYear());
+
+        when(repository.findById(id)).thenReturn(Optional.of(entity));
+        when(mappingHelper.convertToNewDto(any(CountryRiskDataEntity.class), eq(CountryRiskDataDTO.class))).thenReturn(dto);
+
+        CountryRiskDataDTO updatedDto = countryRiskDataService.updateCountryRiskData(dto);
+
+        assertEquals(dto.getCountry(), updatedDto.getCountry());
+        assertEquals(dto.getRiskYear(), updatedDto.getRiskYear());
+        verify(repository, times(1)).save(entity);
+    }
+
+    @Test
+    void testUpdateCountryRiskData_EntityNotFound() {
+        CountryRiskDataDTO dto = new CountryRiskDataDTO();
+        dto.setCountry("UNKNOWN");
+        dto.setRiskYear(9999);
+
+        CountryRiskDataId id = new CountryRiskDataId(dto.getCountry(), dto.getRiskYear());
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            countryRiskDataService.updateCountryRiskData(dto);
+        });
+
+        assertEquals("Id not Found, please provide valid country & riskYear", exception.getMessage());
+        verify(repository, never()).save(any(CountryRiskDataEntity.class));
+    }
+}
+----------------------------------------------------------------------------------
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wellsfargo.era.sermcrdmserverapp.api.controller.CountryRiskDataController;
+import com.wellsfargo.era.sermcrdmserverapp.business.CountryRiskDataService;
+import com.wellsfargo.era.sermcrdmserverapp.dto.CountryRiskDataDTO;
+import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.Collections;
+import java.util.List;
+
+@WebMvcTest(CountryRiskDataController.class)
+class CountryRiskDataControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private CountryRiskDataService countryRiskDataService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testFetchAllCountryRiskData_Success() throws Exception {
+        CountryRiskDataDTO dto = new CountryRiskDataDTO("USA", 2023);
+        when(countryRiskDataService.fetchAllCountryRiskData()).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/countryriskdata/fetchAll"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].country").value("USA"))
+                .andExpect(jsonPath("$[0].riskYear").value(2023));
+    }
+
+    @Test
+    void testFetchAllCountryRiskData_EmptyList() throws Exception {
+        when(countryRiskDataService.fetchAllCountryRiskData()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/countryriskdata/fetchAll"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void testUpdateCountryRiskData_Success() throws Exception {
+        CountryRiskDataDTO dto = new CountryRiskDataDTO("USA", 2023);
+
+        when(countryRiskDataService.updateCountryRiskData(any(CountryRiskDataDTO.class))).thenReturn(dto);
+
+        mockMvc.perform(put("/api/countryriskdata/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.country").value("USA"))
+                .andExpect(jsonPath("$.riskYear").value(2023));
+    }
+
+    @Test
+    void testUpdateCountryRiskData_EntityNotFound() throws Exception {
+        CountryRiskDataDTO dto = new CountryRiskDataDTO("UNKNOWN", 9999);
+
+        when(countryRiskDataService.updateCountryRiskData(any(CountryRiskDataDTO.class)))
+                .thenThrow(new EntityNotFoundException("Id not Found, please provide valid country & riskYear"));
+
+        mockMvc.perform(put("/api/countryriskdata/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Id not Found, please provide valid country & riskYear"));
+    }
+}
